@@ -13,36 +13,64 @@ const statusConfig: Record<
 > = {
   matched: {
     label: "Matched",
-    className: "status-badge status-matched",
+    className:
+      "bg-emerald-50 text-emerald-700",
   },
 
   amount_mismatch: {
     label: "Amount Mismatch",
-    className: "status-badge status-warning",
+    className:
+      "bg-amber-50 text-amber-700",
   },
 
   gstin_mismatch: {
     label: "GSTIN Mismatch",
-    className: "status-badge status-warning",
+    className:
+      "bg-amber-50 text-amber-700",
   },
 
   missing_in_gstr2b: {
     label: "Missing in GSTR-2B",
-    className: "status-badge status-missing",
+    className:
+      "bg-red-50 text-red-700",
   },
 
   unreconciled: {
     label: "Unreconciled",
-    className: "status-badge status-unreconciled",
+    className:
+      "bg-indigo-50 text-indigo-700",
   },
 };
 
-export function StatusBadge({ status }: StatusBadgeProps) {
+export function StatusBadge({
+  status,
+}: StatusBadgeProps) {
   const config = statusConfig[status];
 
   return (
-    <span className={config.className}>
-      <span className="status-dot" />
+    <span
+      className={`
+        inline-flex
+        items-center
+        gap-1.5
+        whitespace-nowrap
+        rounded-full
+        px-2.5
+        py-1
+        text-xs
+        font-semibold
+        ${config.className}
+      `}
+    >
+      <span
+        className="
+          h-1.5
+          w-1.5
+          rounded-full
+          bg-current
+        "
+      />
+
       {config.label}
     </span>
   );
