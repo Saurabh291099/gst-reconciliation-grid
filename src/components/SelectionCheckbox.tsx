@@ -35,7 +35,15 @@ export function SelectionCheckbox({
       disabled={disabled}
       onChange={onChange}
       aria-label={ariaLabel}
-      className="h-4 w-4 cursor-pointer accent-blue-600 disabled:cursor-not-allowed"
+      className="
+        h-4
+        w-4
+        shrink-0
+        cursor-pointer
+        accent-blue-600
+        disabled:cursor-not-allowed
+        disabled:opacity-50
+      "
     />
   );
 }

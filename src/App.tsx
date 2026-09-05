@@ -1,14 +1,9 @@
-// import "./App.css";
-import {
-  useCallback,
-  useState,
-} from "react";
+import { useCallback, useState, useMemo } from "react";
 import { generateInvoices } from "./utils/generateInvoices";
 import type { Invoice, InvoiceStatus } from "./types/invoice";
 import { ReconciliationGrid } from "./components/ReconciliationGrid";
 
 function App() {
-  // const [invoices] = useState<Invoice[]>(() => generateInvoices(1000));
   const [invoices, setInvoices] = useState<Invoice[]>(() =>
     generateInvoices(1000),
   );
@@ -16,9 +11,7 @@ function App() {
     "all",
   );
 
-  // console.log("Generated invoices:", invoices);
-
-  const handleReconcile = useCallback( (invoiceIds: string[]) => {
+  const handleReconcile = useCallback((invoiceIds: string[]) => {
     const selectedIdSet = new Set(invoiceIds);
 
     setInvoices((currentInvoices) =>
@@ -35,53 +28,77 @@ function App() {
     );
   }, []);
 
-  const handleEditAmount = useCallback((invoiceId: string, newAmount: number) => {
-    setInvoices((currentInvoices) =>
-      currentInvoices.map((invoice) => {
-        if (invoice.id !== invoiceId) {
-          return invoice;
-        }
+  const handleEditAmount = useCallback(
+    (invoiceId: string, newAmount: number) => {
+      setInvoices((currentInvoices) =>
+        currentInvoices.map((invoice) => {
+          if (invoice.id !== invoiceId) {
+            return invoice;
+          }
 
-        return {
-          ...invoice,
-          total_amount: newAmount,
-          status: "unreconciled",
-        };
-      }),
-    );
-  }, []);
+          return {
+            ...invoice,
+            total_amount: newAmount,
+            status: "unreconciled",
+          };
+        }),
+      );
+    },
+    [],
+  );
 
-  const handleStatusFilterChange = useCallback( (value: InvoiceStatus | "all") => {
-    setStatusFilter(value);
-  }, []);
+  const handleStatusFilterChange = useCallback(
+    (value: InvoiceStatus | "all") => {
+      setStatusFilter(value);
+    },
+    [],
+  );
 
-  const filteredInvoices =
-    statusFilter === "all"
-      ? invoices
-      : invoices.filter((invoice) => invoice.status === statusFilter);
+  const filteredInvoices = useMemo(() => {
+  if (statusFilter === "all") {
+    return invoices;
+  }
 
-  
+  return invoices.filter(
+    (invoice) =>
+      invoice.status === statusFilter,
+  );
+}, [invoices, statusFilter]);
+
   return (
-    <>
-      <main className="app">
-        <header className="app-header">
+      <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+        <header className="mx-auto mb-6 flex max-w-[1600px] items-center justify-between gap-4">
           <div>
-            <h1>GST Reconciliation</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-800 sm:text-3xl">
+              GST Reconciliation
+            </h1>
 
-            <p>Compare purchase invoices against GSTR-2B</p>
+            <p className="mt-1 text-sm text-slate-500 sm:text-base">
+              Compare purchase invoices against GSTR-2B
+            </p>
           </div>
 
-         <span className="invoice-count">
-  {statusFilter === "all"
-    ? `${invoices.length.toLocaleString(
-        "en-IN"
-      )} invoices`
-    : `${filteredInvoices.length.toLocaleString(
-        "en-IN"
-      )} of ${invoices.length.toLocaleString(
-        "en-IN"
-      )} invoices`}
-</span>
+          <span
+            className="
+        shrink-0
+        rounded-lg
+        border
+        border-slate-200
+        bg-white
+        px-3
+        py-2
+        text-sm
+        font-semibold
+        text-slate-600
+        shadow-sm
+      "
+          >
+            {statusFilter === "all"
+              ? `${invoices.length.toLocaleString("en-IN")} invoices`
+              : `${filteredInvoices.length.toLocaleString(
+                  "en-IN",
+                )} of ${invoices.length.toLocaleString("en-IN")} invoices`}
+          </span>
         </header>
 
         <ReconciliationGrid
@@ -92,7 +109,6 @@ function App() {
           onStatusFilterChange={handleStatusFilterChange}
         />
       </main>
-    </>
   );
 }
 

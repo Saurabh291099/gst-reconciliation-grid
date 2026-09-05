@@ -1,74 +1,117 @@
-import type { Invoice, InvoiceStatus } from "../types/invoice";
+import type {
+  Invoice,
+  InvoiceStatus,
+} from "../types/invoice";
+
 import { sampleInvoices } from "../data/invoices";
 
-const statuses: InvoiceStatus[] = [
+const GENERATED_STATUSES: InvoiceStatus[] = [
   "matched",
   "amount_mismatch",
   "gstin_mismatch",
   "missing_in_gstr2b",
 ];
 
-export const generateInvoices = (count: number): Invoice[] => {
-  return Array.from({ length: count }, (_, index) => {
-    const baseInvoice = sampleInvoices[index % sampleInvoices.length];
+const roundCurrency = (value: number): number => {
+  return Math.round(value);
+};
 
-    const invoiceNumber = index + 1;
+export const generateInvoices = (
+  count: number,
+): Invoice[] => {
+  return Array.from(
+    { length: count },
+    (_, index) => {
+      const baseInvoice =
+        sampleInvoices[
+          index % sampleInvoices.length
+        ];
 
-    const taxableAmount =
-      baseInvoice.taxable_amount + (index % 10) * 5000;
+      const sequence = index + 1;
 
-    const taxRate =
-      baseInvoice.igst > 0 ? 0.18 : 0.09;
+      const taxableAmount =
+        baseInvoice.taxable_amount +
+        (index % 10) * 5000;
 
-    const igst =
-      baseInvoice.igst > 0
-        ? taxableAmount * 0.18
+      const isIgstInvoice =
+        baseInvoice.igst > 0;
+
+      const igst = isIgstInvoice
+        ? roundCurrency(
+            taxableAmount * 0.18,
+          )
         : 0;
 
-    const cgst =
-      baseInvoice.igst === 0
-        ? taxableAmount * taxRate
-        : 0;
+      const cgst = isIgstInvoice
+        ? 0
+        : roundCurrency(
+            taxableAmount * 0.09,
+          );
 
-    const sgst =
-      baseInvoice.igst === 0
-        ? taxableAmount * taxRate
-        : 0;
+      const sgst = isIgstInvoice
+        ? 0
+        : roundCurrency(
+            taxableAmount * 0.09,
+          );
 
-    const totalAmount =
-      taxableAmount + igst + cgst + sgst;
+      const totalAmount =
+        taxableAmount +
+        igst +
+        cgst +
+        sgst;
 
-    const status =
-      statuses[index % statuses.length];
+      const status =
+        GENERATED_STATUSES[
+          index %
+            GENERATED_STATUSES.length
+        ];
 
-    let gstr2bAmount: number | null = totalAmount;
+      let gstr2bAmount:
+        | number
+        | null = totalAmount;
 
-    if (status === "amount_mismatch") {
-      gstr2bAmount = totalAmount - 5000;
-    }
+      if (status === "amount_mismatch") {
+        gstr2bAmount =
+          totalAmount - 5000;
+      }
 
-    if (status === "missing_in_gstr2b") {
-      gstr2bAmount = null;
-    }
+      if (
+        status ===
+        "missing_in_gstr2b"
+      ) {
+        gstr2bAmount = null;
+      }
 
-    return {
-      ...baseInvoice,
+      return {
+        ...baseInvoice,
 
-      id: `inv-${String(invoiceNumber).padStart(4, "0")}`,
+        id: `inv-${String(sequence).padStart(
+          4,
+          "0",
+        )}`,
 
-      invoice_number: `${baseInvoice.invoice_number}-${invoiceNumber}`,
+        invoice_number:
+          `${baseInvoice.invoice_number}-${String(
+            sequence,
+          ).padStart(4, "0")}`,
 
-      taxable_amount: taxableAmount,
+        taxable_amount:
+          taxableAmount,
 
-      igst,
-      cgst,
-      sgst,
+        igst,
 
-      total_amount: totalAmount,
+        cgst,
 
-      gstr2b_amount: gstr2bAmount,
+        sgst,
 
-      status,
-    };
-  });
+        total_amount:
+          totalAmount,
+
+        gstr2b_amount:
+          gstr2bAmount,
+
+        status,
+      };
+    },
+  );
 };
